@@ -1,12 +1,17 @@
 # CineScope - Aplikasi Katalog Film (UTS Pemrograman Mobile)
 
-## 🎬 Tema dan Tujuan
+## 🎬 Tentang CineScope
 
-**CineScope** adalah aplikasi mobile yang dikembangkan sebagai tugas Ujian Tengah Semester (UTS) mata kuliah Pemrograman Mobile (Semester Ganjil 2025/2026).
+**CineScope** adalah aplikasi mobile katalog film yang dirancang untuk membantu pengguna menemukan informasi tentang berbagai film. Aplikasi ini menampilkan daftar film populer, film yang sedang tren, dan film dengan rating tertinggi. Pengguna dapat mencari film berdasarkan judul, memfilter berdasarkan genre, melihat detail lengkap film (termasuk sinopsis, sutradara, pemeran, durasi, dan rating), serta menyimpan film favorit mereka.
 
-- **Tema:** Katalog Film 🎬
-- **Tujuan:** Merancang dan mengimplementasikan antarmuka aplikasi mobile menggunakan _framework_ Flutter, menerapkan konsep _layout_, _widget_, dan navigasi antar halaman. Versi ini menggunakan **data _dummy_** (disimpan secara lokal dalam format JSON) dan mengimplementasikan arsitektur **MVVM (Model-View-ViewModel)** untuk pemisahan kode yang bersih. Struktur data dirancang untuk memungkinkan integrasi dengan API publik (seperti TMDb) di masa mendatang.
+## 🎯 Tujuan Aplikasi
 
+Tujuan utama dari aplikasi CineScope adalah:
+
+* Menyediakan platform yang **mudah digunakan** bagi pengguna untuk **menjelajahi dan menemukan informasi** tentang film.
+* Memungkinkan pengguna untuk **mencari film spesifik** dengan cepat.
+* Memberikan **detail film yang komprehensif** untuk membantu pengguna memutuskan film apa yang ingin ditonton.
+* Memfasilitasi pengguna dalam **menyimpan dan mengelola daftar film favorit** pribadi mereka.
 ---
 
 ## 📱 Halaman dan Fungsi
