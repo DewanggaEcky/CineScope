@@ -57,7 +57,7 @@ Aplikasi ini terdiri dari halaman/rute berikut:
 
 ## 🧭 Cara Penggunaan Aplikasi
 
-Berikut adalah langkah-langkah umum untuk menggunakan aplikasi CineScope:
+Berikut adalah langkah-langkah untuk menggunakan aplikasi CineScope:
 
 1.  **Login atau Registrasi:**
 
