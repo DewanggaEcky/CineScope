@@ -1,0 +1,122 @@
+[
+  {
+    "id": "1",
+    "title": "Dune: Part Two",
+    "releaseDate": "2024-03-01",
+    "genre": ["Sci-Fi", "Adventure", "Action"],
+    "rating": 8.8,
+    "posterUrl": "assets/images/dune2.jpg",
+    "summary": "Paul Atreides unites with Chani and the Fremen while on a warpath of revenge against the conspirators who destroyed his family.",
+    "duration": "2h 46m",
+    "director": "Denis Villeneuve",
+    "cast": ["Timothée Chalamet", "Zendaya", "Rebecca Ferguson"]
+  },
+  {
+    "id": "2",
+    "title": "Oppenheimer",
+    "releaseDate": "2023-07-21",
+    "genre": ["Biography", "Drama", "History"],
+    "rating": 8.6,
+    "posterUrl": "assets/images/oppenheimer.jpg",
+    "summary": "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.",
+    "duration": "3h 0m",
+    "director": "Christopher Nolan",
+    "cast": ["Cillian Murphy", "Emily Blunt", "Matt Damon"]
+  },
+  {
+    "id": "3",
+    "title": "Spider-Man: No Way Home",
+    "releaseDate": "2021-12-17",
+    "genre": ["Action", "Adventure", "Fantasy"],
+    "rating": 8.2,
+    "posterUrl": "assets/images/spiderman_nwh.jpg",
+    "summary": "With Spider-Man's identity now revealed, Peter asks Doctor Strange for help. When a spell goes wrong, dangerous foes from other worlds appear.",
+    "duration": "2h 28m",
+    "director": "Jon Watts",
+    "cast": ["Tom Holland", "Zendaya", "Benedict Cumberbatch"]
+  },
+  {
+    "id": "4",
+    "title": "The Batman",
+    "releaseDate": "2022-03-04",
+    "genre": ["Action", "Crime", "Drama"],
+    "rating": 7.8,
+    "posterUrl": "assets/images/the_batman.jpg",
+    "summary": "When a sadistic serial killer begins murdering key political figures in Gotham, Batman is forced to investigate the city's hidden corruption.",
+    "duration": "2h 56m",
+    "director": "Matt Reeves",
+    "cast": ["Robert Pattinson", "Zoë Kravitz", "Jeffrey Wright"]
+  },
+  {
+    "id": "5",
+    "title": "Tenet",
+    "releaseDate": "2020-09-03",
+    "genre": ["Action", "Sci-Fi", "Thriller"],
+    "rating": 7.3,
+    "posterUrl": "assets/images/tenet.jpg",
+    "summary": "Armed with only one word, Tenet, and fighting for the survival of the entire world, a Protagonist journeys through a twilight world of international espionage.",
+    "duration": "2h 30m",
+    "director": "Christopher Nolan",
+    "cast": ["John David Washington", "Robert Pattinson", "Elizabeth Debicki"]
+  },
+  {
+    "id": "6",
+    "title": "Soul",
+    "releaseDate": "2020-12-25",
+    "genre": ["Animation", "Adventure", "Comedy"],
+    "rating": 8.0,
+    "posterUrl": "assets/images/soul.jpg",
+    "summary": "After landing the gig of a lifetime, a New York jazz pianist suddenly finds himself in a strange land between Earth and the afterlife.",
+    "duration": "1h 40m",
+    "director": "Pete Docter",
+    "cast": ["Jamie Foxx", "Tina Fey", "Graham Norton"]
+  },
+  {
+    "id": "7",
+    "title": "Barbie",
+    "releaseDate": "2023-07-21",
+    "genre": ["Comedy", "Adventure", "Fantasy"],
+    "rating": 6.9,
+    "posterUrl": "assets/images/barbie.jpg",
+    "summary": "Barbie suffers a crisis that leads her to question her world and her existence.",
+    "duration": "1h 54m",
+    "director": "Greta Gerwig",
+    "cast": ["Margot Robbie", "Ryan Gosling", "Issa Rae"]
+  },
+  {
+    "id": "8",
+    "title": "Everything Everywhere All at Once",
+    "releaseDate": "2022-03-25",
+    "genre": ["Action", "Adventure", "Comedy"],
+    "rating": 7.8,
+    "posterUrl": "assets/images/everything.jpg",
+    "summary": "An aging Chinese immigrant is swept up in an insane adventure, where she alone can save the world by exploring other universes.",
+    "duration": "2h 19m",
+    "director": "Daniel Kwan",
+    "cast": ["Michelle Yeoh", "Ke Huy Quan", "Stephanie Hsu"]
+  },
+  {
+    "id": "9",
+    "title": "Poor Things",
+    "releaseDate": "2023-12-08",
+    "genre": ["Comedy", "Drama", "Romance"],
+    "rating": 8.3,
+    "posterUrl": "assets/images/poor_things.jpg",
+    "summary": "The incredible tale about the fantastical evolution of Bella Baxter, a young woman brought back to life by the brilliant and unorthodox scientist Dr. Godwin Baxter.",
+    "duration": "2h 21m",
+    "director": "Yorgos Lanthimos",
+    "cast": ["Emma Stone", "Mark Ruffalo", "Willem Dafoe"]
+  },
+  {
+    "id": "10",
+    "title": "Inside Out 2",
+    "releaseDate": "2024-06-14",
+    "genre": ["Animation", "Adventure", "Comedy"],
+    "rating": 7.9,
+    "posterUrl": "assets/images/inside_out_2.jpg",
+    "summary": "Follow Riley, in her teenage years, encountering new Emotions: Anxiety, Envy, Ennui and Embarrassment.",
+    "duration": "1h 36m",
+    "director": "Kelsey Mann",
+    "cast": ["Amy Poehler", "Maya Hawke", "Kensington Tallman"]
+  }
+]
