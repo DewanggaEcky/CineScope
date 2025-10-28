@@ -22,12 +22,12 @@ Aplikasi ini terdiri dari halaman/rute berikut:
     - Menampilkan kolom untuk email dan kata sandi.
     - Mensimulasikan login pengguna dan menyimpan status login secara lokal (`shared_preferences`).
     - Menavigasi ke Halaman Register atau Halaman Beranda.
-    - <img src='assets/images/readme/login.jpg' alt='Tampilan login' width='270' height='480'>
+    - <img src='assets/images/readme/login.jpg' alt='Tampilan login' width='270' height='600'>
 2.  **Halaman Register (`/register`)**
     - Menampilkan kolom untuk nama lengkap, email, dan kata sandi.
     - Mensimulasikan registrasi pengguna dan menyimpan status login secara lokal.
     - Menavigasi ke Halaman Login atau Halaman Beranda.
-    - <img src='assets/images/readme/register.jpg' alt='Tampilan Register' width='270' height='480'>
+    - <img src='assets/images/readme/register.jpg' alt='Tampilan Register' width='270' height='600'>
 3.  **Halaman Beranda (`/` atau `/home`)**
     - Menampilkan dasbor utama setelah login.
     - Menampilkan daftar film yang dikategorikan ("Now Showing", "Trending", "Top Rated") yang diambil dari data _dummy_.
@@ -35,7 +35,7 @@ Aplikasi ini terdiri dari halaman/rute berikut:
     - Berisi _search bar_ (palsu) yang menavigasi ke Halaman Pencarian.
     - Menampilkan _bottom navigation bar_ untuk Beranda, Pencarian, dan Favorit.
     - Menyertakan ikon profil dengan menu _dropdown_ yang menampilkan info pengguna (dummy) dan opsi Logout.
-    - <img src='assets/images/readme/home.jpg' alt='Tampilan Home' width='270' height='480'>
+    - <img src='assets/images/readme/home.jpg' alt='Tampilan Home' width='270' height='600'>
 4.  **Halaman Pencarian (`/search`)**
     - Menyediakan _search bar_ aktif (fokus otomatis dengan keyboard).
     - Memungkinkan pengguna mencari film berdasarkan judul.
@@ -43,20 +43,20 @@ Aplikasi ini terdiri dari halaman/rute berikut:
     - Menampilkan "Popular Searches" pada awalnya.
     - Menampilkan hasil pencarian/filter menggunakan _widget_ kartu film yang dapat digunakan kembali.
     - Menampilkan _bottom navigation bar_.
-    - <img src='assets/images/readme/search.jpg' alt='Tampilan Search' width='270' height='480'>
+    - <img src='assets/images/readme/search.jpg' alt='Tampilan Search' width='270' height='600'>
 5.  **Halaman Detail Film (`/movie-detail`)**
     - Diakses dengan mengetuk kartu film dari hasil Beranda atau Pencarian.
     - Menampilkan informasi detail tentang film tertentu (poster, judul, rating, tahun, durasi, sinopsis, genre, sutradara, pemeran) yang diambil berdasarkan ID.
     - Menampilkan efek _header_ yang bisa _collapse_ (`SliverAppBar`).
     - Menampilkan tombol "Play Trailer" (hanya UI) dan "Add to Favourite".
     - Menampilkan daftar "Similar Movies".
-    - <img src='assets/images/readme/detail.jpg' alt='Tampilan Detail' width='270' height='480'>
+    - <img src='assets/images/readme/detail.jpg' alt='Tampilan Detail' width='270' height='600'>
 6.  **Halaman Favorit (`/favourite`)**
     - Menampilkan film yang telah ditandai sebagai favorit oleh pengguna.
     - Memuat ID film favorit dari penyimpanan lokal (`shared_preferences`) dan mengambil detailnya.
     - Menampilkan ikon dan pesan jika belum ada favorit yang ditambahkan.
     - Menampilkan _bottom navigation bar_.
-    - <img src='assets/images/readme/favourite.jpg' alt='Tampilan Favourite' width='270' height='480'>
+    - <img src='assets/images/readme/favourite.jpg' alt='Tampilan Favourite' width='270' height='600'>
 
 ---
 
