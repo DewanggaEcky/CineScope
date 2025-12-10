@@ -22,7 +22,9 @@ class MovieDetailViewModel extends ChangeNotifier {
     try {
       _movie = await _service.fetchMovieDetail(movieId);
       if (_movie != null) {
-        List<Movie> allMovies = await _service.fetchAllMovies();
+        // PERBAIKAN: Mengganti fetchAllMovies() dengan fetchPopularMovies()
+        List<Movie> allMovies = await _service.fetchPopularMovies();
+
         _similarMovies = allMovies
             .where((m) => m.id != movieId)
             .take(5)

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:project_movie/main.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/favourite_view_model.dart';
 import 'widget/movie_card_widget.dart';
@@ -20,6 +19,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
   @override
   void initState() {
     super.initState();
+    // Memuat data favorit dari Firestore/TMDb saat halaman pertama kali dibuka
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<FavouriteViewModel>(context, listen: false).loadFavourites();
     });
@@ -32,17 +32,18 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       appBar: AppBar(
         title: const Text('Favourites', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
-        automaticallyImplyLeading:
-            false,
+        automaticallyImplyLeading: false,
       ),
       body: Consumer<FavouriteViewModel>(
         builder: (context, viewModel, child) {
+          // Loading State
           if (viewModel.isLoading) {
             return const Center(
               child: CircularProgressIndicator(color: Colors.red),
             );
           }
 
+          // Empty State
           if (viewModel.favouriteMovies.isEmpty) {
             return Center(
               child: Column(
@@ -57,11 +58,13 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                   const Text(
                     'No Favourite Movies Yet',
                     style: TextStyle(color: Colors.white70, fontSize: 16),
-                  )
+                  ),
                 ],
               ),
             );
           }
+
+          // Success State (Menampilkan Daftar Favorit)
           return GridView.builder(
             padding: const EdgeInsets.all(16.0),
             itemCount: viewModel.favouriteMovies.length,
@@ -107,10 +110,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.favorite),
-          label: 'Favourite',
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favourite'),
       ],
       onTap: (index) {
         if (index == 0) {
@@ -120,7 +120,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
           homeViewModel.resetHomeFilter();
           Navigator.pushReplacementNamed(context, SearchScreen.routeName);
         } else if (index == 2) {
-          //Favourite
+          // Favourite
         }
       },
     );

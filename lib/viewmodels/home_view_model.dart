@@ -4,11 +4,17 @@ import '../services/movie_service.dart';
 
 class HomeViewModel extends ChangeNotifier {
   final MovieService _service = MovieService();
-  List<Movie> _masterMovieList = [];
+
+  List<String> _availableGenres = ['All'];
+
+  List<Movie> _allNowShowing = []; // Data base sebelum difilter
+  List<Movie> _allTrending = []; // Data base sebelum difilter
+  List<Movie> _allTopRated = []; // Data base sebelum difilter
 
   List<Movie> _nowShowing = [];
   List<Movie> _trending = [];
   List<Movie> _topRated = [];
+
   bool _isLoading = true;
   String _selectedGenre = 'All';
 
@@ -17,17 +23,40 @@ class HomeViewModel extends ChangeNotifier {
   List<Movie> get topRated => _topRated;
   bool get isLoading => _isLoading;
   String get selectedGenre => _selectedGenre;
+  List<String> get availableGenres => _availableGenres;
 
   Future<void> loadHomePageData() async {
-    if (_masterMovieList.isNotEmpty) return;
-    _isLoading = true;
-    notifyListeners();
+    // Hanya tampilkan loading penuh jika data base belum ada
+    if (_allNowShowing.isEmpty) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
     try {
-      _masterMovieList = await _service.fetchAllMovies();
+      // 1. HARUS FETCH GENRES PERTAMA untuk mengisi Map di Service
+      _availableGenres = await _service.fetchGenres();
+      if (!_availableGenres.contains(_selectedGenre)) {
+        _selectedGenre = 'All';
+      }
+
+      // 2. Ambil data film base (hanya jika belum pernah diambil)
+      if (_allNowShowing.isEmpty) {
+        _allNowShowing = await _service.fetchNowPlayingMovies();
+        _allTrending = await _service.fetchPopularMovies();
+        _allTopRated = await _service.fetchTopRatedMovies();
+      }
+
+      // 3. Terapkan filter genre ke daftar base
       _filterMovies();
     } catch (e) {
-      print('Error loading movies in HomeViewModel: $e');
+      print('Error loading data in HomeViewModel: $e');
+      _allNowShowing = [];
+      _allTrending = [];
+      _allTopRated = [];
+      _nowShowing = [];
+      _trending = [];
+      _topRated = [];
+      _availableGenres = ['All'];
     }
 
     _isLoading = false;
@@ -35,39 +64,65 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   void updateSelectedGenre(String genre) {
+    if (_selectedGenre == genre) return;
+
     _selectedGenre = genre;
-    _filterMovies();
+
+    _isLoading = true;
+    notifyListeners();
+
+    // Jalankan filter movies di background (simulate delay for smooth UI)
+    Future.delayed(const Duration(milliseconds: 300), () {
+      _filterMovies();
+      _isLoading = false;
+      notifyListeners();
+    });
+  }
+
+  Future<void> resetHomeFilterAndRefresh() async {
+    // 1. Reset ke genre "All"
+    _selectedGenre = 'All';
+
+    // 2. Kosongkan data base agar fetch API ulang
+    _allNowShowing = [];
+    _allTrending = [];
+    _allTopRated = [];
+
+    // 3. Muat ulang data
+    await loadHomePageData();
   }
 
   void _filterMovies() {
-    List<Movie> filteredByGenre;
-
     if (_selectedGenre == 'All') {
-      filteredByGenre = List.from(_masterMovieList);
+      _nowShowing = List.from(_allNowShowing);
+      _trending = List.from(_allTrending);
+      _topRated = List.from(_allTopRated);
     } else {
-      filteredByGenre = _masterMovieList.where((movie) {
-        return movie.genre.any((g) => g.toLowerCase() == _selectedGenre.toLowerCase());
+      // Filter list base menggunakan Nama Genre yang LENGKAP
+      _nowShowing = _allNowShowing.where((movie) {
+        return movie.genre.any(
+          (g) => g.toLowerCase() == _selectedGenre.toLowerCase(),
+        );
+      }).toList();
+
+      _trending = _allTrending.where((movie) {
+        return movie.genre.any(
+          (g) => g.toLowerCase() == _selectedGenre.toLowerCase(),
+        );
+      }).toList();
+
+      _topRated = _allTopRated.where((movie) {
+        return movie.genre.any(
+          (g) => g.toLowerCase() == _selectedGenre.toLowerCase(),
+        );
       }).toList();
     }
-
-    _nowShowing = filteredByGenre.where((m) =>
-      m.releaseDate.contains('2024') || m.releaseDate.contains('2023')
-    ).take(5).toList();
-
-    _trending = filteredByGenre.where((m) =>
-      m.rating >= 8.0 && m.rating <= 8.8
-    ).take(5).toList();
-
-    _topRated = filteredByGenre.where((m) =>
-      m.rating > 8.0
-    ).take(5).toList();
-
-    notifyListeners();
   }
 
   void resetHomeFilter() {
     if (_selectedGenre == 'All') return;
     _selectedGenre = 'All';
     _filterMovies();
+    notifyListeners();
   }
 }

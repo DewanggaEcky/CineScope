@@ -24,10 +24,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  // NEW: Helper untuk menampilkan SnackBar
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-
     return Scaffold(
       body: Stack(
         children: [
@@ -47,6 +52,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Center(
             child: Consumer<AuthViewModel>(
               builder: (context, viewModel, child) {
+                // NEW: Logic untuk menampilkan error jika ada
+                if (viewModel.errorMessage != null &&
+                    viewModel.errorMessage!.isNotEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _showError(context, viewModel.errorMessage!);
+                    // Clear error message setelah ditampilkan
+                    viewModel.errorMessage = null;
+                  });
+                }
+
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Card(
@@ -118,15 +133,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       String email = _emailController.text;
                                       String password =
                                           _passwordController.text;
-                                      bool success = await authViewModel
+
+                                      // Panggil attemptRegister dari ViewModel
+                                      bool success = await viewModel
                                           .attemptRegister(
-                                            // Panggil attemptRegister
                                             name,
                                             email,
                                             password,
                                           );
 
                                       if (success && context.mounted) {
+                                        // Register berhasil, navigasi ke Home
                                         Navigator.of(
                                           context,
                                         ).pushNamedAndRemoveUntil(
@@ -196,9 +213,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   color: Colors.white,
                   size: 20,
                 ),
-                onPressed: () => Navigator.of(
-                  context,
-                ).pop(),
+                onPressed: () => Navigator.of(context).pop(),
               ),
             ),
           ),

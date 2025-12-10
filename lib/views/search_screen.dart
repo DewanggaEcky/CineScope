@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../viewmodels/search_view_model.dart';
 import '../viewmodels/home_view_model.dart';
 import 'widget/movie_card_widget.dart';
-import '../models/movie.dart';
 import 'favourite_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -17,12 +16,22 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<SearchViewModel>(context, listen: false).fetchMasterList();
+      final viewModel = Provider.of<SearchViewModel>(context, listen: false);
+      _searchController.text = viewModel.searchQuery;
+      viewModel.fetchMasterList();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -36,6 +45,7 @@ class _SearchScreenState extends State<SearchScreen> {
             elevation: 0,
             automaticallyImplyLeading: false,
             title: TextField(
+              controller: _searchController, // <-- Gunakan controller
               autofocus: true,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
@@ -54,16 +64,18 @@ class _SearchScreenState extends State<SearchScreen> {
               },
             ),
           ),
-          body: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                _buildGenreFilters(context, viewModel),
-                const SizedBox(height: 20),
-                _buildBodyContent(context, viewModel),
-              ],
-            ),
+          body: Column(
+            // <-- Hapus SingleChildScrollView dari sini
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              _buildGenreFilters(context, viewModel),
+              const SizedBox(height: 20),
+              Expanded(
+                // <-- Wrap body content in Expanded
+                child: _buildBodyContent(context, viewModel),
+              ),
+            ],
           ),
           bottomNavigationBar: _buildBottomNavigationBar(context),
         );
@@ -72,30 +84,29 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildBodyContent(BuildContext context, SearchViewModel viewModel) {
-    if (viewModel.isLoading && !viewModel.hasSearched) {
+    // Show loading state if it's currently loading (UAS point II.b.3, II.d.2)
+    if (viewModel.isLoading && !viewModel.isInitialLoadDone) {
       return const Center(child: CircularProgressIndicator(color: Colors.red));
     }
 
-    if (!viewModel.hasSearched) {
-      return _buildPopularSearches(context);
-    }
-
-    if (viewModel.filteredMovies.isEmpty) {
-      return const Center(
+    // Show empty state if results are empty (UAS point II.b.3)
+    if (viewModel.isInitialLoadDone && viewModel.filteredMovies.isEmpty) {
+      return Center(
         child: Padding(
-          padding: EdgeInsets.only(top: 50.0),
+          padding: const EdgeInsets.only(top: 50.0),
           child: Text(
-            'No movies found.',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
+            viewModel.searchQuery.isEmpty
+                ? 'No movies found for the selected filter.'
+                : 'No results found for "${viewModel.searchQuery}".',
+            style: const TextStyle(color: Colors.white70, fontSize: 16),
           ),
         ),
       );
     }
 
+    // Display the results (initial popular movies or search results)
     return GridView.builder(
       padding: const EdgeInsets.all(16.0),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
       itemCount: viewModel.filteredMovies.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -119,66 +130,13 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildPopularSearches(BuildContext context) {
-    final List<String> popularSearches = [
-      'Action Movies',
-      'Sci-Fi Thriller',
-      'Horror 2024',
-      'Top Rated',
-      'Comedy Films',
-      'Drama Series',
-    ];
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.trending_up, color: Colors.white70, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Popular Searches',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ListView.builder(
-            itemCount: popularSearches.length,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              return ListTile(
-                leading: Icon(Icons.search, color: Colors.grey.shade600),
-                title: Text(
-                  popularSearches[index],
-                  style: TextStyle(color: Colors.white70, fontSize: 16),
-                ),
-                onTap: () {
-                },
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+  // NOTE: Hapus fungsi _buildPopularSearches karena sekarang kita menampilkan
+  // kartu film sungguhan sebagai ganti daftar ListTile dummy.
 
   Widget _buildGenreFilters(BuildContext context, SearchViewModel viewModel) {
-    final List<String> genres = [
-      'All',
-      'Action',
-      'Drama',
-      'Comedy',
-      'Sci-Fi',
-      'Animation',
-    ];
-    return Container(
+    // ... (logic remains the same, calls viewModel.updateSelectedGenre)
+    final List<String> genres = viewModel.availableGenres;
+    return SizedBox(
       height: 40,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -205,8 +163,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 borderRadius: BorderRadius.circular(20),
               ),
               side: isSelected
-                  ? BorderSide(color: Colors.red, width: 1)
-                  : BorderSide(color: Colors.grey, width: 1),
+                  ? const BorderSide(color: Colors.red, width: 1)
+                  : const BorderSide(color: Colors.grey, width: 1),
             ),
           );
         },
@@ -215,6 +173,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildBottomNavigationBar(BuildContext context) {
+    // ... (logic remains the same)
     return BottomNavigationBar(
       backgroundColor: Colors.black,
       selectedItemColor: Colors.red,
@@ -239,9 +198,9 @@ class _SearchScreenState extends State<SearchScreen> {
           viewModel.resetSearch();
           Navigator.pushReplacementNamed(context, '/');
         } else if (index == 1) {
-          // SEARCH
+          // SEARCH - Stay here
         } else if (index == 2) {
-          Provider.of<SearchViewModel>(context, listen: false).resetSearch();
+          viewModel.resetSearch();
           homeViewModel.resetHomeFilter();
           Navigator.pushReplacementNamed(context, FavouriteScreen.routeName);
         }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
+import 'favourite_view_model.dart'; // Import untuk reset
+import 'package:provider/provider.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -9,6 +12,10 @@ class AuthViewModel extends ChangeNotifier {
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
+  set errorMessage(String? message) {
+    _errorMessage = message;
+    notifyListeners();
+  }
 
   void _setLoading(bool loading) {
     _isLoading = loading;
@@ -19,21 +26,71 @@ class AuthViewModel extends ChangeNotifier {
     _setLoading(true);
     _errorMessage = null;
 
-    await Future.delayed(const Duration(seconds: 1));
-    await _authService.saveUserData(email, "CineScope User"); 
-    
-    _setLoading(false);
-    return true;
+    try {
+      await _authService.signInWithEmail(email, password);
+      _setLoading(false);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _getFriendlyErrorMessage(e.code);
+      _setLoading(false);
+      return false;
+    } catch (e) {
+      _errorMessage = 'An unknown error occurred.';
+      _setLoading(false);
+      return false;
+    }
   }
 
-  Future<bool> attemptRegister(String name, String email, String password) async {
+  Future<bool> attemptRegister(
+    String name,
+    String email,
+    String password,
+  ) async {
     _setLoading(true);
     _errorMessage = null;
 
-    await Future.delayed(const Duration(seconds: 1));
-    await _authService.saveUserData(email, name); 
-    
-    _setLoading(false);
-    return true;
+    try {
+      await _authService.registerWithEmail(
+        name: name,
+        email: email,
+        password: password,
+      );
+      _setLoading(false);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _getFriendlyErrorMessage(e.code);
+      _setLoading(false);
+      return false;
+    } catch (e) {
+      _errorMessage = 'An unknown error occurred during registration.';
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  Future<void> signOut(BuildContext context) async {
+    // 1. Reset state Favorite sebelum logout
+    Provider.of<FavouriteViewModel>(context, listen: false).reset();
+
+    // 2. Lakukan logout Firebase
+    await _authService.clearUserData();
+  }
+
+  String _getFriendlyErrorMessage(String errorCode) {
+    switch (errorCode) {
+      case 'user-not-found':
+        return 'No user found for that email.';
+      case 'wrong-password':
+      case 'invalid-credential':
+        return 'Wrong password or invalid credentials.';
+      case 'email-already-in-use':
+        return 'The email address is already in use by another account.';
+      case 'weak-password':
+        return 'The password provided is too weak (min 6 characters).';
+      case 'invalid-email':
+        return 'The email address is invalid.';
+      default:
+        return 'Authentication failed. Please check your credentials.';
+    }
   }
 }

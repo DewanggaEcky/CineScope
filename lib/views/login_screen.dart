@@ -22,10 +22,15 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // NEW: Helper untuk menampilkan SnackBar
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-
     return Scaffold(
       body: Stack(
         children: [
@@ -45,6 +50,16 @@ class _LoginScreenState extends State<LoginScreen> {
           Center(
             child: Consumer<AuthViewModel>(
               builder: (context, viewModel, child) {
+                // NEW: Logic untuk menampilkan error jika ada
+                if (viewModel.errorMessage != null &&
+                    viewModel.errorMessage!.isNotEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _showError(context, viewModel.errorMessage!);
+                    // Clear error message setelah ditampilkan
+                    viewModel.errorMessage = null;
+                  });
+                }
+
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Card(
@@ -109,15 +124,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                       String email = _emailController.text;
                                       String password =
                                           _passwordController.text;
-                                      bool success = await authViewModel
+
+                                      // Panggil attemptLogin dari ViewModel
+                                      bool success = await viewModel
                                           .attemptLogin(email, password);
+
                                       if (success && context.mounted) {
                                         Navigator.of(
                                           context,
                                         ).pushNamedAndRemoveUntil(
                                           '/',
-                                          (Route<dynamic> route) =>
-                                              false,
+                                          (Route<dynamic> route) => false,
                                         );
                                       }
                                     },
@@ -206,9 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: Colors.red.withOpacity(0.7),
-          ),
+          borderSide: BorderSide(color: Colors.red.withOpacity(0.7)),
         ),
       ),
     );

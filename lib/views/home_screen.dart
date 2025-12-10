@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project_movie/viewmodels/auth_view_model.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodels/home_view_model.dart';
@@ -11,16 +12,34 @@ import 'login_screen.dart';
 import 'search_screen.dart';
 import 'favourite_screen.dart';
 import 'movie_detail_screen.dart';
+import 'category_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  Future<void> _onRefresh() async {
+    await Provider.of<HomeViewModel>(
+      context,
+      listen: false,
+    ).resetHomeFilterAndRefresh();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Panggil initial load data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<HomeViewModel>(context, listen: false).loadHomePageData();
     });
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -47,8 +66,13 @@ class HomeScreen extends StatelessWidget {
               return PopupMenuButton<String>(
                 onSelected: (value) async {
                   final navigator = Navigator.of(context);
+                  final authViewModel = Provider.of<AuthViewModel>(
+                    context,
+                    listen: false,
+                  );
                   if (value == 'logout') {
-                    await AuthService().clearUserData();
+                    await authViewModel.signOut(context);
+
                     navigator.pushNamedAndRemoveUntil(
                       LoginScreen.routeName,
                       (Route<dynamic> route) => false,
@@ -100,55 +124,85 @@ class HomeScreen extends StatelessWidget {
       ),
       body: Consumer<HomeViewModel>(
         builder: (context, viewModel, child) {
-          if (viewModel.isLoading) {
+          // Case 1: Initial Loading Screen (Loading Penuh)
+          if (viewModel.isLoading && viewModel.nowShowing.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(color: Colors.red),
             );
           }
-          if (viewModel.nowShowing.isEmpty &&
-              viewModel.trending.isEmpty &&
-              viewModel.topRated.isEmpty) {
-            return const Center(
-              child: Text(
-                'No movies found for the selected filter.',
-                style: TextStyle(color: Colors.white70),
-              ),
-            );
-          }
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 10),
-                _buildSearchBar(context),
-                const SizedBox(height: 20),
-                _buildGenreFilters(context, viewModel),
-                const SizedBox(height: 20),
-                _buildMovieSection(
-                  title: 'Now Showing',
-                  movies: viewModel.nowShowing,
-                  isLargeCard: true,
-                ),
-                _buildMovieSection(
-                  title: 'Trending',
-                  movies: viewModel.trending,
-                  isLargeCard: false,
-                ),
-                _buildMovieSection(
-                  title: 'Top Rated',
-                  movies: viewModel.topRated,
-                  isLargeCard: false,
-                ),
 
-                const SizedBox(height: 80),
-              ],
+          // Case 2 & 3: Empty State atau Data Loaded/Loading filter
+          return RefreshIndicator(
+            onRefresh:
+                _onRefresh, // Pull-to-Refresh: Memuat ulang dan mereset ke "All"
+            color: Colors.red,
+            backgroundColor: Colors.black,
+            child: SingleChildScrollView(
+              physics:
+                  viewModel
+                      .nowShowing
+                      .isEmpty // Selalu scrollable jika kosong
+                  ? const AlwaysScrollableScrollPhysics()
+                  : null,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  _buildSearchBar(context),
+                  const SizedBox(height: 20),
+                  _buildGenreFilters(context, viewModel),
+                  const SizedBox(height: 20),
+
+                  // Menampilkan Loading di Tengah Halaman saat filter genre diklik
+                  viewModel.isLoading
+                      ? SizedBox(
+                          height:
+                              300, // Memberi tinggi agar loading terlihat di tengah
+                          child: Center(
+                            child: CircularProgressIndicator(color: Colors.red),
+                          ),
+                        )
+                      : (viewModel.nowShowing.isEmpty &&
+                            viewModel.trending.isEmpty &&
+                            viewModel.topRated.isEmpty)
+                      ? SizedBox(
+                          height: 300,
+                          child: Center(
+                            child: Text(
+                              'No movies found for the selected filter.',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          ),
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildMovieSection(
+                              title: 'Now Showing',
+                              movies: viewModel.nowShowing,
+                              isLargeCard: true,
+                            ),
+                            _buildMovieSection(
+                              title: 'Trending',
+                              movies: viewModel.trending,
+                              isLargeCard: false,
+                            ),
+                            _buildMovieSection(
+                              title: 'Top Rated',
+                              movies: viewModel.topRated,
+                              isLargeCard: false,
+                            ),
+                          ],
+                        ),
+
+                  const SizedBox(height: 80),
+                ],
+              ),
             ),
           );
         },
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(
-        context,
-      ),
+      bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
 
@@ -182,14 +236,8 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildGenreFilters(BuildContext context, HomeViewModel viewModel) {
-    final List<String> genres = [
-      'All',
-      'Action',
-      'Drama',
-      'Comedy',
-      'Sci-Fi',
-      'Animation',
-    ];
+    final List<String> genres = viewModel.availableGenres;
+
     return SizedBox(
       height: 40,
       child: ListView.builder(
@@ -198,32 +246,27 @@ class HomeScreen extends StatelessWidget {
         itemCount: genres.length,
         itemBuilder: (context, index) {
           final genre = genres[index];
-          final isSelected =
-              genre ==
-              viewModel.selectedGenre;
+          final isSelected = genre == viewModel.selectedGenre;
           return Padding(
             padding: const EdgeInsets.only(right: 10.0),
             child: ActionChip(
               label: Text(
                 genre,
                 style: TextStyle(
-                  color: isSelected
-                      ? Colors.white
-                      : Colors.white70,
+                  color: isSelected ? Colors.white : Colors.white70,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
               backgroundColor: isSelected ? Colors.red : Colors.grey.shade900,
               onPressed: () {
+                // Panggil fungsi updateSelectedGenre yang baru
                 viewModel.updateSelectedGenre(genre);
               },
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
               side: BorderSide(
-                color: isSelected
-                    ? Colors.red
-                    : Colors.grey.shade700,
+                color: isSelected ? Colors.red : Colors.grey.shade700,
                 width: 1,
               ),
             ),
@@ -239,30 +282,76 @@ class HomeScreen extends StatelessWidget {
     required bool isLargeCard,
   }) {
     if (movies.isEmpty) return const SizedBox.shrink();
+
+    // Batasi film yang ditampilkan di Home Screen menjadi 5
+    final List<Movie> displayMovies = movies.take(5).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-          child: Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Row(
+            // NEW: Gunakan Row untuk menempatkan judul dan tombol Lihat Semua
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              // NEW: Tombol Navigasi Lihat Semua
+              Visibility(
+                visible:
+                    movies.length >
+                    5, // Tampilkan hanya jika ada lebih dari 5 film
+                child: GestureDetector(
+                  onTap: () {
+                    // Navigasi ke CategoryScreen dengan membawa semua data film untuk kategori ini
+                    Navigator.pushNamed(
+                      context,
+                      CategoryScreen.routeName,
+                      arguments: {
+                        'title': title,
+                        'movies': movies, // Kirim seluruh daftar film
+                      },
+                    );
+                  },
+                  child: const Row(
+                    children: [
+                      Text(
+                        'See All',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.red,
+                        size: 14,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         SizedBox(
-          height: isLargeCard
-              ? 300
-              : 250,
+          height: isLargeCard ? 300 : 250,
+          // Gunakan displayMovies yang sudah dibatasi
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            itemCount: movies.length,
+            itemCount: displayMovies.length,
             itemBuilder: (context, index) {
-              final movie = movies[index];
+              final movie =
+                  displayMovies[index]; // Menggunakan list yang dibatasi
               return Padding(
                 padding: const EdgeInsets.only(right: 15.0),
                 child: GestureDetector(
@@ -291,10 +380,7 @@ class HomeScreen extends StatelessWidget {
       context,
       listen: false,
     );
-    final homeViewModel = Provider.of<HomeViewModel>(
-      context,
-      listen: false,
-    );
+    final homeViewModel = Provider.of<HomeViewModel>(context, listen: false);
 
     return BottomNavigationBar(
       backgroundColor: Colors.black,

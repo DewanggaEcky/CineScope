@@ -14,6 +14,7 @@ class MovieDetailScreen extends StatefulWidget {
 }
 
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
+  // ... (initState and build methods remain mostly the same, focusing on fetchMovieDetail) ...
   @override
   void initState() {
     super.initState();
@@ -39,13 +40,15 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         builder: (context, viewModel, child) {
           if (viewModel.isLoading) {
             return const Center(
+              // Indikator Loading (Minimal Fungsionalitas UAS point 3 & 4)
               child: CircularProgressIndicator(color: Colors.red),
             );
           }
           if (viewModel.movie == null) {
+            // Error State/Data Empty (Minimal Fungsionalitas UAS point 3 & 4)
             return const Center(
               child: Text(
-                'Movie not found.',
+                'Movie not found or failed to load data.',
                 style: TextStyle(color: Colors.white),
               ),
             );
@@ -73,11 +76,19 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                           if (settings == null) return const SizedBox.shrink();
                           double deltaExtent =
                               settings.maxExtent - settings.minExtent;
-                          double t = (deltaExtent == 0) ? 0 : (1.0 -(settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0);
+                          double t = (deltaExtent == 0)
+                              ? 0
+                              : (1.0 -
+                                        (settings.currentExtent -
+                                                settings.minExtent) /
+                                            deltaExtent)
+                                    .clamp(0.0, 1.0);
                           bool isCollapsed = t > 0.8;
 
                           return CircleAvatar(
-                            backgroundColor: isCollapsed ? Colors.transparent : Colors.black.withOpacity(0.5),
+                            backgroundColor: isCollapsed
+                                ? Colors.transparent
+                                : Colors.black.withOpacity(0.5),
                             radius: 18,
                             child: IconButton(
                               padding: EdgeInsets.zero,
@@ -147,13 +158,23 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     );
   }
 
+  // Perubahan: Menggunakan Image.network
   Widget _buildHeaderImageWithGradient(BuildContext context, Movie movie) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(
-          movie.posterUrl,
+        Image.network(
+          movie.posterUrl, // <-- Perubahan: Menggunakan Image.network
           fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              color: Colors.black,
+              child: const Center(
+                child: CircularProgressIndicator(color: Colors.red),
+              ),
+            );
+          },
           errorBuilder: (ctx, err, stack) => Container(
             color: Colors.grey.shade900,
             child: const Center(
@@ -171,11 +192,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.black87,
-                  Colors.black,
-                ],
+                colors: [Colors.transparent, Colors.black87, Colors.black],
                 stops: [0.0, 0.5, 1.0],
               ),
             ),
@@ -186,6 +203,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   }
 
   Widget _buildInfoSection(BuildContext context, Movie movie) {
+    // ... (rest of the file remains the same)
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -204,7 +222,9 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     const Icon(Icons.star, color: Colors.yellow, size: 14),
                     const SizedBox(width: 5),
                     Text(
-                      movie.rating.toString(),
+                      movie.rating.toStringAsFixed(
+                        1,
+                      ), // Tambah .toStringAsFixed(1)
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
@@ -241,7 +261,8 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               const Icon(Icons.access_time, color: Colors.white70, size: 14),
               const SizedBox(width: 5),
               Text(
-                movie.duration,
+                movie.duration ??
+                    'N/A', // Gunakan ?? 'N/A' karena durasi sekarang nullable
                 style: const TextStyle(color: Colors.white70, fontSize: 14),
               ),
             ],
@@ -262,7 +283,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(100),
-                      side: BorderSide(color: Colors.red),
+                      side: const BorderSide(color: Colors.red),
                     ),
                   ),
                 ),
@@ -314,7 +335,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            movie.summary,
+            movie.summary ?? 'Synopsis not available.', // Gunakan ??
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 14,
@@ -346,7 +367,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           ),
           const SizedBox(height: 5),
           Text(
-            movie.director,
+            movie.director ?? 'N/A', // Gunakan ??
             style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 20),
@@ -360,7 +381,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           ),
           const SizedBox(height: 5),
           Text(
-            movie.cast.join(', '),
+            movie.cast?.join(', ') ?? 'N/A', // Gunakan ?.join() ??
             style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 30),
@@ -369,7 +390,10 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     );
   }
 
-  Widget _buildSimilarMovies(BuildContext context, MovieDetailViewModel viewModel) {
+  Widget _buildSimilarMovies(
+    BuildContext context,
+    MovieDetailViewModel viewModel,
+  ) {
     if (viewModel.similarMovies.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -387,7 +411,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
             ),
           ),
         ),
-        Container(
+        SizedBox(
           height: 250,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,

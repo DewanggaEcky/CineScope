@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 import 'services/auth_service.dart';
 
@@ -15,11 +17,17 @@ import 'views/register_screen.dart';
 import 'views/search_screen.dart';
 import 'views/movie_detail_screen.dart';
 import 'views/favourite_screen.dart';
+import 'views/category_screen.dart';
 
 bool _isLoggedIn = false;
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   _isLoggedIn = await AuthService().isLoggedIn(); 
   runApp(const MyApp());
 }
@@ -55,6 +63,13 @@ class MyApp extends StatelessWidget {
           SearchScreen.routeName: (ctx) => const SearchScreen(),
           MovieDetailScreen.routeName: (ctx) => const MovieDetailScreen(),
           FavouriteScreen.routeName: (ctx) => const FavouriteScreen(),
+          CategoryScreen.routeName: (ctx) {
+            final args = ModalRoute.of(ctx)?.settings.arguments as Map<String, dynamic>?;
+            return CategoryScreen(
+              title: args?['title'] ?? 'Category',
+              movies: args?['movies'] ?? []
+            );
+          }
         },
       ),
     );

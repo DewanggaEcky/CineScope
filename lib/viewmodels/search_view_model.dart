@@ -8,23 +8,52 @@ class SearchViewModel extends ChangeNotifier {
   List<Movie> _masterMovieList = [];
   List<Movie> _filteredMovies = [];
 
+  List<String> _availableGenres = ['All']; // <-- List untuk genre dinamis
+
   bool _isLoading = false;
-  bool _hasSearched = false;
+  bool _isInitialLoadDone = false;
   String _searchQuery = '';
   String _selectedGenre = 'All';
-  
+
   List<Movie> get filteredMovies => _filteredMovies;
   bool get isLoading => _isLoading;
-  bool get hasSearched => _hasSearched;
+  bool get isInitialLoadDone => _isInitialLoadDone;
   String get selectedGenre => _selectedGenre;
+  String get searchQuery => _searchQuery;
+  List<String> get availableGenres => _availableGenres; // <-- Getter untuk UI
 
   Future<void> fetchMasterList() async {
-    if (_masterMovieList.isNotEmpty) return;
+    if (_isInitialLoadDone && _searchQuery.isEmpty && _selectedGenre == 'All') {
+      _applyLocalFilter(); // Hanya terapkan filter jika ada perubahan genre
+      return;
+    }
+
     _isLoading = true;
     notifyListeners();
 
-    _masterMovieList = await _service.fetchAllMovies();
-    _filteredMovies = [];
+    try {
+      // 1. Ambil daftar Genre terlebih dahulu
+      _availableGenres = await _service.fetchGenres();
+      if (!_availableGenres.contains(_selectedGenre)) {
+        _selectedGenre = 'All';
+      }
+
+      if (_searchQuery.isEmpty) {
+        if (!_isInitialLoadDone) {
+          _masterMovieList = await _service.fetchPopularMovies();
+        }
+      } else {
+        _masterMovieList = await _service.searchMovies(_searchQuery);
+      }
+
+      _applyLocalFilter();
+      _isInitialLoadDone = true;
+    } catch (e) {
+      print('Error fetching data in SearchViewModel: $e');
+      _masterMovieList = [];
+      _filteredMovies = [];
+      _availableGenres = ['All'];
+    }
 
     _isLoading = false;
     notifyListeners();
@@ -32,43 +61,33 @@ class SearchViewModel extends ChangeNotifier {
 
   void updateSearchQuery(String query) {
     _searchQuery = query;
-    _filterMovies();
+    fetchMasterList();
   }
 
-  void updateSelectedGenre (String genre) {
+  void updateSelectedGenre(String genre) {
     _selectedGenre = genre;
-    _filterMovies();
+    fetchMasterList();
   }
 
-  void _filterMovies() {
-    _isLoading = true;
-    _hasSearched = true;
-    notifyListeners();
-
+  void _applyLocalFilter() {
     List<Movie> tempFilteredList;
-    if(_selectedGenre == 'All') {
+
+    if (_selectedGenre == 'All') {
       tempFilteredList = _masterMovieList;
     } else {
       tempFilteredList = _masterMovieList.where((movie) {
-        return movie.genre.any((g) => g.toLowerCase() == _selectedGenre.toLowerCase());
+        return movie.genre.any(
+          (g) => g.toLowerCase() == _selectedGenre.toLowerCase(),
+        );
       }).toList();
     }
 
-    if (_searchQuery.isEmpty) {
-      _filteredMovies = tempFilteredList;
-    }else {
-      _filteredMovies = tempFilteredList.where((movie) {
-        return movie.title.toLowerCase().contains(_searchQuery.toLowerCase());
-      }).toList();
-    }
-
-    _isLoading = false;
-    notifyListeners();
+    _filteredMovies = tempFilteredList;
   }
 
   void resetSearch() {
     _filteredMovies = [];
-    _hasSearched = false;
+    _isInitialLoadDone = false;
     _searchQuery = '';
     _selectedGenre = 'All';
     notifyListeners();

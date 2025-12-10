@@ -1,33 +1,93 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // NEW: Import Firestore
 
 class AuthService {
-  static const String _loginKey = 'isLoggedIn';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore =
+      FirebaseFirestore.instance; // Inisialisasi Firestore
+
   static const String _userNameKey = 'userName';
-  static const String _userEmailKey = 'useEmail';
+  static const String _userEmailKey = 'userEmail';
 
   Future<void> saveUserData(String email, String name) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_loginKey, true);
     await prefs.setString(_userNameKey, name);
     await prefs.setString(_userEmailKey, email);
   }
 
   Future<void> clearUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_loginKey);
     await prefs.remove(_userNameKey);
     await prefs.remove(_userEmailKey);
+    await _auth.signOut();
   }
 
   Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_loginKey) ?? false;
+    return _auth.currentUser != null;
+  }
+
+  Future<UserCredential?> signInWithEmail(String email, String password) async {
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      await saveUserData(
+        userCredential.user?.email ?? email,
+        userCredential.user?.displayName ?? 'CineScope User',
+      );
+      return userCredential;
+    } on FirebaseAuthException {
+      rethrow;
+    }
+  }
+
+  // REGISTER DENGAN PENYIMPANAN DATA PROFIL KE FIRESTORE
+  Future<UserCredential?> registerWithEmail({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final User? user = userCredential.user;
+
+      // 1. Update Display Name di Firebase Auth
+      await user?.updateDisplayName(name);
+
+      // 2. SIMPAN DATA PROFIL KE FIRESTORE (users collection)
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).set({
+          'name': name,
+          'email': email,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      // 3. Simpan nama/email di shared_preferences (fallback)
+      await saveUserData(email, name);
+
+      return userCredential;
+    } on FirebaseAuthException {
+      rethrow;
+    }
   }
 
   Future<Map<String, String>> getUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    String name = prefs.getString(_userNameKey) ?? 'CineScope User';
-    String email = prefs.getString(_userEmailKey) ?? 'user@example.com';
-    return {'name' : name, 'email' : email};
+
+    User? user = _auth.currentUser;
+
+    String name =
+        user?.displayName ?? prefs.getString(_userNameKey) ?? 'CineScope User';
+    String email =
+        user?.email ?? prefs.getString(_userEmailKey) ?? 'user@example.com';
+
+    return {'name': name, 'email': email};
   }
 }

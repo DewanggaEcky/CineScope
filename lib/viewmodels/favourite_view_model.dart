@@ -1,3 +1,4 @@
+// lib/viewmodels/favourite_view_model.dart (Kode lengkap)
 import 'package:flutter/material.dart';
 import '../models/movie.dart';
 import '../services/favourite_service.dart';
@@ -14,22 +15,35 @@ class FavouriteViewModel extends ChangeNotifier {
   List<Movie> get favouriteMovies => _favouriteMovies;
   bool get isLoading => _isLoading;
 
+  // METODE RESET UNTUK LOGOUT
+  void reset() {
+    _favouriteMovies = [];
+    _favouriteIds = [];
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<void> loadFavourites() async {
+    if (_favouriteService.currentUserId == null) {
+      reset();
+      return;
+    }
+
     _isLoading = true;
     notifyListeners();
+
     _favouriteIds = await _favouriteService.getFavouriteIds();
     List<Movie> tempFavourites = [];
 
     for (String id in _favouriteIds) {
       try {
         Movie movie = await _movieService.fetchMovieDetail(id);
-        if (movie.id != '0') {
-          tempFavourites.add(movie);
-        }
+        tempFavourites.add(movie);
       } catch (e) {
         print("Error fetching favourite movie detail for ID $id: $e");
       }
     }
+
     _favouriteMovies = tempFavourites;
     _isLoading = false;
     notifyListeners();
@@ -41,6 +55,11 @@ class FavouriteViewModel extends ChangeNotifier {
 
   Future<void> toggleFavourite(Movie movie) async {
     final movieId = movie.id;
+
+    if (_favouriteService.currentUserId == null) {
+      return;
+    }
+
     if (isFavourite(movieId)) {
       await _favouriteService.removeFavourite(movieId);
       _favouriteIds.remove(movieId);
