@@ -5,8 +5,6 @@ import 'movie_detail_screen.dart';
 
 class CategoryScreen extends StatelessWidget {
   static const routeName = '/category-list';
-
-  // Model data untuk halaman ini
   final String title;
   final List<Movie> movies;
 
@@ -51,7 +49,6 @@ class CategoryScreen extends StatelessWidget {
                 final movie = movies[index];
                 return GestureDetector(
                   onTap: () {
-                    // Navigasi ke detail film
                     Navigator.pushNamed(
                       context,
                       MovieDetailScreen.routeName,

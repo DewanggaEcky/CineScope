@@ -45,7 +45,7 @@ class _SearchScreenState extends State<SearchScreen> {
             elevation: 0,
             automaticallyImplyLeading: false,
             title: TextField(
-              controller: _searchController, // <-- Gunakan controller
+              controller: _searchController,
               autofocus: true,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
@@ -65,14 +65,12 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
           body: Column(
-            // <-- Hapus SingleChildScrollView dari sini
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
               _buildGenreFilters(context, viewModel),
               const SizedBox(height: 20),
               Expanded(
-                // <-- Wrap body content in Expanded
                 child: _buildBodyContent(context, viewModel),
               ),
             ],
@@ -84,12 +82,10 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildBodyContent(BuildContext context, SearchViewModel viewModel) {
-    // Show loading state if it's currently loading (UAS point II.b.3, II.d.2)
     if (viewModel.isLoading && !viewModel.isInitialLoadDone) {
       return const Center(child: CircularProgressIndicator(color: Colors.red));
     }
 
-    // Show empty state if results are empty (UAS point II.b.3)
     if (viewModel.isInitialLoadDone && viewModel.filteredMovies.isEmpty) {
       return Center(
         child: Padding(
@@ -103,8 +99,6 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       );
     }
-
-    // Display the results (initial popular movies or search results)
     return GridView.builder(
       padding: const EdgeInsets.all(16.0),
       itemCount: viewModel.filteredMovies.length,
@@ -130,11 +124,7 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // NOTE: Hapus fungsi _buildPopularSearches karena sekarang kita menampilkan
-  // kartu film sungguhan sebagai ganti daftar ListTile dummy.
-
   Widget _buildGenreFilters(BuildContext context, SearchViewModel viewModel) {
-    // ... (logic remains the same, calls viewModel.updateSelectedGenre)
     final List<String> genres = viewModel.availableGenres;
     return SizedBox(
       height: 40,
@@ -173,7 +163,6 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildBottomNavigationBar(BuildContext context) {
-    // ... (logic remains the same)
     return BottomNavigationBar(
       backgroundColor: Colors.black,
       selectedItemColor: Colors.red,
@@ -198,7 +187,7 @@ class _SearchScreenState extends State<SearchScreen> {
           viewModel.resetSearch();
           Navigator.pushReplacementNamed(context, '/');
         } else if (index == 1) {
-          // SEARCH - Stay here
+          // SEARCH
         } else if (index == 2) {
           viewModel.resetSearch();
           homeViewModel.resetHomeFilter();

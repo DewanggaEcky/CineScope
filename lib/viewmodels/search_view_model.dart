@@ -20,11 +20,11 @@ class SearchViewModel extends ChangeNotifier {
   bool get isInitialLoadDone => _isInitialLoadDone;
   String get selectedGenre => _selectedGenre;
   String get searchQuery => _searchQuery;
-  List<String> get availableGenres => _availableGenres; // <-- Getter untuk UI
+  List<String> get availableGenres => _availableGenres;
 
   Future<void> fetchMasterList() async {
     if (_isInitialLoadDone && _searchQuery.isEmpty && _selectedGenre == 'All') {
-      _applyLocalFilter(); // Hanya terapkan filter jika ada perubahan genre
+      _applyLocalFilter();
       return;
     }
 
@@ -32,7 +32,6 @@ class SearchViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 1. Ambil daftar Genre terlebih dahulu
       _availableGenres = await _service.fetchGenres();
       if (!_availableGenres.contains(_selectedGenre)) {
         _selectedGenre = 'All';

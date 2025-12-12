@@ -15,7 +15,6 @@ class FavouriteViewModel extends ChangeNotifier {
   List<Movie> get favouriteMovies => _favouriteMovies;
   bool get isLoading => _isLoading;
 
-  // METODE RESET UNTUK LOGOUT
   void reset() {
     _favouriteMovies = [];
     _favouriteIds = [];

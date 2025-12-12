@@ -19,7 +19,6 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
   @override
   void initState() {
     super.initState();
-    // Memuat data favorit dari Firestore/TMDb saat halaman pertama kali dibuka
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<FavouriteViewModel>(context, listen: false).loadFavourites();
     });
@@ -36,14 +35,12 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       ),
       body: Consumer<FavouriteViewModel>(
         builder: (context, viewModel, child) {
-          // Loading State
           if (viewModel.isLoading) {
             return const Center(
               child: CircularProgressIndicator(color: Colors.red),
             );
           }
 
-          // Empty State
           if (viewModel.favouriteMovies.isEmpty) {
             return Center(
               child: Column(
@@ -63,8 +60,6 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
               ),
             );
           }
-
-          // Success State (Menampilkan Daftar Favorit)
           return GridView.builder(
             padding: const EdgeInsets.all(16.0),
             itemCount: viewModel.favouriteMovies.length,

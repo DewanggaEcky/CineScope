@@ -14,8 +14,6 @@ class MovieCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double cardWidth = isLargeCard ? 180 : 150;
-
-    // Perubahan: Menggunakan Image.network dan penanganan loading/error
     final bool isNetworkImage = movie.posterUrl.isNotEmpty;
     final String imageUrl = movie.posterUrl;
 
@@ -30,14 +28,12 @@ class MovieCardWidget extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 child: isNetworkImage
                     ? Image.network(
-                        // <-- Perubahan: Menggunakan Image.network
                         imageUrl,
                         height: isLargeCard ? 240 : 180,
                         width: cardWidth,
                         fit: BoxFit.cover,
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
-                          // Indikator loading (Circular ProgressIndicator)
                           return Container(
                             height: isLargeCard ? 240 : 180,
                             width: cardWidth,
@@ -51,7 +47,6 @@ class MovieCardWidget extends StatelessWidget {
                           );
                         },
                         errorBuilder: (context, error, stackTrace) {
-                          // Error State/Placeholder
                           return Container(
                             height: isLargeCard ? 240 : 180,
                             width: cardWidth,
@@ -63,7 +58,6 @@ class MovieCardWidget extends StatelessWidget {
                         },
                       )
                     : Container(
-                        // Fallback for empty URL (no poster path)
                         height: isLargeCard ? 240 : 180,
                         width: cardWidth,
                         color: Colors.grey.shade800,
@@ -91,7 +85,7 @@ class MovieCardWidget extends StatelessWidget {
                       Text(
                         movie.rating.toStringAsFixed(
                           1,
-                        ), // Menampilkan 1 desimal
+                        ),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,

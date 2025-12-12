@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
-import 'favourite_view_model.dart'; // Import untuk reset
+import 'favourite_view_model.dart';
 import 'package:provider/provider.dart';
 
 class AuthViewModel extends ChangeNotifier {
@@ -69,10 +69,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> signOut(BuildContext context) async {
-    // 1. Reset state Favorite sebelum logout
     Provider.of<FavouriteViewModel>(context, listen: false).reset();
-
-    // 2. Lakukan logout Firebase
     await _authService.clearUserData();
   }
 

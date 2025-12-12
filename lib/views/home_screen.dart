@@ -32,7 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Panggil initial load data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<HomeViewModel>(context, listen: false).loadHomePageData();
     });
@@ -124,24 +123,21 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Consumer<HomeViewModel>(
         builder: (context, viewModel, child) {
-          // Case 1: Initial Loading Screen (Loading Penuh)
           if (viewModel.isLoading && viewModel.nowShowing.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(color: Colors.red),
             );
           }
-
-          // Case 2 & 3: Empty State atau Data Loaded/Loading filter
           return RefreshIndicator(
             onRefresh:
-                _onRefresh, // Pull-to-Refresh: Memuat ulang dan mereset ke "All"
+                _onRefresh,
             color: Colors.red,
             backgroundColor: Colors.black,
             child: SingleChildScrollView(
               physics:
                   viewModel
                       .nowShowing
-                      .isEmpty // Selalu scrollable jika kosong
+                      .isEmpty
                   ? const AlwaysScrollableScrollPhysics()
                   : null,
               child: Column(
@@ -152,12 +148,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 20),
                   _buildGenreFilters(context, viewModel),
                   const SizedBox(height: 20),
-
-                  // Menampilkan Loading di Tengah Halaman saat filter genre diklik
                   viewModel.isLoading
                       ? SizedBox(
                           height:
-                              300, // Memberi tinggi agar loading terlihat di tengah
+                              300,
                           child: Center(
                             child: CircularProgressIndicator(color: Colors.red),
                           ),
@@ -259,7 +253,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               backgroundColor: isSelected ? Colors.red : Colors.grey.shade900,
               onPressed: () {
-                // Panggil fungsi updateSelectedGenre yang baru
                 viewModel.updateSelectedGenre(genre);
               },
               shape: RoundedRectangleBorder(
@@ -282,8 +275,6 @@ class _HomeScreenState extends State<HomeScreen> {
     required bool isLargeCard,
   }) {
     if (movies.isEmpty) return const SizedBox.shrink();
-
-    // Batasi film yang ditampilkan di Home Screen menjadi 5
     final List<Movie> displayMovies = movies.take(5).toList();
 
     return Column(
@@ -292,7 +283,6 @@ class _HomeScreenState extends State<HomeScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
           child: Row(
-            // NEW: Gunakan Row untuk menempatkan judul dan tombol Lihat Semua
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
@@ -303,20 +293,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              // NEW: Tombol Navigasi Lihat Semua
               Visibility(
                 visible:
                     movies.length >
-                    5, // Tampilkan hanya jika ada lebih dari 5 film
+                    5,
                 child: GestureDetector(
                   onTap: () {
-                    // Navigasi ke CategoryScreen dengan membawa semua data film untuk kategori ini
                     Navigator.pushNamed(
                       context,
                       CategoryScreen.routeName,
                       arguments: {
                         'title': title,
-                        'movies': movies, // Kirim seluruh daftar film
+                        'movies': movies,
                       },
                     );
                   },
@@ -344,14 +332,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         SizedBox(
           height: isLargeCard ? 300 : 250,
-          // Gunakan displayMovies yang sudah dibatasi
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             itemCount: displayMovies.length,
             itemBuilder: (context, index) {
               final movie =
-                  displayMovies[index]; // Menggunakan list yang dibatasi
+                  displayMovies[index];
               return Padding(
                 padding: const EdgeInsets.only(right: 15.0),
                 child: GestureDetector(

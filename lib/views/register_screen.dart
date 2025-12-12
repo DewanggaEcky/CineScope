@@ -24,7 +24,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  // NEW: Helper untuk menampilkan SnackBar
   void _showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.red),
@@ -52,12 +51,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Center(
             child: Consumer<AuthViewModel>(
               builder: (context, viewModel, child) {
-                // NEW: Logic untuk menampilkan error jika ada
                 if (viewModel.errorMessage != null &&
                     viewModel.errorMessage!.isNotEmpty) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     _showError(context, viewModel.errorMessage!);
-                    // Clear error message setelah ditampilkan
                     viewModel.errorMessage = null;
                   });
                 }
@@ -133,8 +130,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       String email = _emailController.text;
                                       String password =
                                           _passwordController.text;
-
-                                      // Panggil attemptRegister dari ViewModel
                                       bool success = await viewModel
                                           .attemptRegister(
                                             name,
@@ -143,7 +138,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           );
 
                                       if (success && context.mounted) {
-                                        // Register berhasil, navigasi ke Home
                                         Navigator.of(
                                           context,
                                         ).pushNamedAndRemoveUntil(

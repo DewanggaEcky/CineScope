@@ -36,7 +36,6 @@ class MovieService {
     }
   }
 
-  // Multi-page fetching (10 Halaman)
   Future<List<Movie>> fetchPopularMovies() async {
     List<Movie> allMovies = [];
     for (int i = 1; i <= 10; i++) {
@@ -57,7 +56,6 @@ class MovieService {
     return allMovies.toSet().toList();
   }
 
-  // PENTING: Mengisi Map Genre Statis
   Future<List<String>> fetchGenres() async {
     if (_genreMap.isNotEmpty) {
       List<String> genreNames = _genreMap.values.toList();
@@ -130,7 +128,6 @@ class MovieService {
 
         if (results.isEmpty) return null;
 
-        // 1. Prioritas Utama: Cari yang tipenya 'Trailer' dan bersumber 'YouTube'
         final trailer = results.firstWhere(
           (video) => video['site'] == 'YouTube' && video['type'] == 'Trailer',
           orElse: () => null,
@@ -140,7 +137,6 @@ class MovieService {
           return trailer['key'] as String;
         }
 
-        // 2. Prioritas Kedua: Jika tidak ada Trailer, cari video YouTube apa pun (Teaser, Clip, Featurette)
         final anyYoutubeVideo = results.firstWhere(
           (video) => video['site'] == 'YouTube',
           orElse: () => null,
@@ -165,8 +161,6 @@ class MovieService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = json.decode(response.body);
-
-        // --- Existing logic for fetching credits/cast/director ---
         final creditsUrl = Uri.parse(
           '$kTmdbBaseUrl/movie/$id/credits?api_key=$kTmdbApiKey',
         );
@@ -192,18 +186,14 @@ class MovieService {
             cast = castData.take(3).map((c) => c['name'].toString()).toList();
           }
         }
-        // --- End of Existing Logic ---
 
-        // --- NEW: Panggil fungsi trailer key ---
         String? trailerKey = await _fetchMovieTrailerKey(id);
-        // --- End NEW ---
-
-        // Gabungkan data dan kembalikan objek Movie
+        
         return Movie.fromJson({
           ...jsonResponse,
           'director': director,
           'cast': cast,
-          'trailerKey': trailerKey, // <-- NEW: Tambahkan trailerKey
+          'trailerKey': trailerKey,
         });
       } else {
         throw Exception('Failed to load movie detail: ${response.statusCode}');

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart'; // <-- NEW: Import url_launcher
+import 'package:url_launcher/url_launcher.dart';
 import '../models/movie.dart';
 import '../viewmodels/favourite_view_model.dart';
 import '../viewmodels/movie_detail_view_model.dart';
@@ -40,12 +40,10 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         builder: (context, viewModel, child) {
           if (viewModel.isLoading) {
             return const Center(
-              // Indikator Loading (Minimal Fungsionalitas UAS point 3 & 4)
               child: CircularProgressIndicator(color: Colors.red),
             );
           }
           if (viewModel.movie == null) {
-            // Error State/Data Empty (Minimal Fungsionalitas UAS point 3 & 4)
             return const Center(
               child: Text(
                 'Movie not found or failed to load data.',
@@ -158,7 +156,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     );
   }
 
-  // Perubahan: Menggunakan Image.network
   Widget _buildHeaderImageWithGradient(BuildContext context, Movie movie) {
     return Stack(
       fit: StackFit.expand,
@@ -203,7 +200,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   }
 
   Widget _buildInfoSection(BuildContext context, Movie movie) {
-    // Helper function untuk meluncurkan URL trailer
     void launchTrailer() async {
       final movie = Provider.of<MovieDetailViewModel>(
         context,
@@ -224,20 +220,16 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       );
 
       try {
-        // Coba luncurkan dalam mode eksternal (aplikasi YouTube)
         bool launched = await launchUrl(
           url,
           mode: LaunchMode.externalApplication,
         );
 
         if (!launched) {
-          // Jika gagal meluncurkan dalam mode eksternal (misal: aplikasi YouTube tidak ada),
-          // coba luncurkan dalam mode browser default
           launched = await launchUrl(url, mode: LaunchMode.platformDefault);
         }
 
         if (!launched) {
-          // Jika kedua mode gagal
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Failed to open trailer URL.'),
@@ -275,9 +267,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     const Icon(Icons.star, color: Colors.yellow, size: 14),
                     const SizedBox(width: 5),
                     Text(
-                      movie.rating.toStringAsFixed(
-                        1,
-                      ), // Tambah .toStringAsFixed(1)
+                      movie.rating.toStringAsFixed(1),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
@@ -314,8 +304,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               const Icon(Icons.access_time, color: Colors.white70, size: 14),
               const SizedBox(width: 5),
               Text(
-                movie.duration ??
-                    'N/A', // Gunakan ?? 'N/A' karena durasi sekarang nullable
+                movie.duration ?? 'N/A',
                 style: const TextStyle(color: Colors.white70, fontSize: 14),
               ),
             ],
@@ -327,7 +316,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 child: ElevatedButton.icon(
                   onPressed: isTrailerAvailable
                       ? launchTrailer
-                      : null, // NEW: Play Trailer Logic
+                      : null,
                   icon: const Icon(Icons.play_arrow, color: Colors.white),
                   label: Text(
                     isTrailerAvailable ? 'Play Trailer' : 'Trailer Not Found',
@@ -438,7 +427,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           ),
           const SizedBox(height: 5),
           Text(
-            movie.cast?.join(', ') ?? 'N/A', // Gunakan ?.join() ??
+            movie.cast?.join(', ') ?? 'N/A',
             style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 30),

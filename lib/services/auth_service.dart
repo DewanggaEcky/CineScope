@@ -1,11 +1,11 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // NEW: Import Firestore
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore =
-      FirebaseFirestore.instance; // Inisialisasi Firestore
+      FirebaseFirestore.instance;
 
   static const String _userNameKey = 'userName';
   static const String _userEmailKey = 'userEmail';
@@ -43,7 +43,6 @@ class AuthService {
     }
   }
 
-  // REGISTER DENGAN PENYIMPANAN DATA PROFIL KE FIRESTORE
   Future<UserCredential?> registerWithEmail({
     required String name,
     required String email,
@@ -54,10 +53,8 @@ class AuthService {
         email: email,
         password: password,
       );
-
       final User? user = userCredential.user;
 
-      // 1. Update Display Name di Firebase Auth
       await user?.updateDisplayName(name);
 
       if (user != null) {

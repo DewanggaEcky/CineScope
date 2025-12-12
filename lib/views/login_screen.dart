@@ -22,7 +22,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // NEW: Helper untuk menampilkan SnackBar
   void _showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.red),
@@ -50,12 +49,10 @@ class _LoginScreenState extends State<LoginScreen> {
           Center(
             child: Consumer<AuthViewModel>(
               builder: (context, viewModel, child) {
-                // NEW: Logic untuk menampilkan error jika ada
                 if (viewModel.errorMessage != null &&
                     viewModel.errorMessage!.isNotEmpty) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     _showError(context, viewModel.errorMessage!);
-                    // Clear error message setelah ditampilkan
                     viewModel.errorMessage = null;
                   });
                 }
@@ -124,8 +121,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       String email = _emailController.text;
                                       String password =
                                           _passwordController.text;
-
-                                      // Panggil attemptLogin dari ViewModel
                                       bool success = await viewModel
                                           .attemptLogin(email, password);
 
@@ -215,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none, // No border by default
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
