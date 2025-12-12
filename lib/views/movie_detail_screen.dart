@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:project_movie/viewmodels/favourite_view_model.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart'; // <-- NEW: Import url_launcher
 import '../models/movie.dart';
+import '../viewmodels/favourite_view_model.dart';
 import '../viewmodels/movie_detail_view_model.dart';
 import 'widget/movie_card_widget.dart';
 
@@ -14,7 +15,6 @@ class MovieDetailScreen extends StatefulWidget {
 }
 
 class _MovieDetailScreenState extends State<MovieDetailScreen> {
-  // ... (initState and build methods remain mostly the same, focusing on fetchMovieDetail) ...
   @override
   void initState() {
     super.initState();
@@ -164,7 +164,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       fit: StackFit.expand,
       children: [
         Image.network(
-          movie.posterUrl, // <-- Perubahan: Menggunakan Image.network
+          movie.posterUrl,
           fit: BoxFit.cover,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
@@ -203,7 +203,60 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   }
 
   Widget _buildInfoSection(BuildContext context, Movie movie) {
-    // ... (rest of the file remains the same)
+    // Helper function untuk meluncurkan URL trailer
+    void launchTrailer() async {
+      final movie = Provider.of<MovieDetailViewModel>(
+        context,
+        listen: false,
+      ).movie;
+      if (movie == null || movie.trailerKey == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Trailer not found for this movie.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      final url = Uri.parse(
+        'https://www.youtube.com/watch?v=${movie.trailerKey}',
+      );
+
+      try {
+        // Coba luncurkan dalam mode eksternal (aplikasi YouTube)
+        bool launched = await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+
+        if (!launched) {
+          // Jika gagal meluncurkan dalam mode eksternal (misal: aplikasi YouTube tidak ada),
+          // coba luncurkan dalam mode browser default
+          launched = await launchUrl(url, mode: LaunchMode.platformDefault);
+        }
+
+        if (!launched) {
+          // Jika kedua mode gagal
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to open trailer URL.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('An unexpected error occurred: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+
+    final bool isTrailerAvailable = movie.trailerKey != null;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -272,11 +325,13 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: isTrailerAvailable
+                      ? launchTrailer
+                      : null, // NEW: Play Trailer Logic
                   icon: const Icon(Icons.play_arrow, color: Colors.white),
-                  label: const Text(
-                    'Play Trailer',
-                    style: TextStyle(color: Colors.white),
+                  label: Text(
+                    isTrailerAvailable ? 'Play Trailer' : 'Trailer Not Found',
+                    style: const TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
@@ -285,6 +340,8 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                       borderRadius: BorderRadius.circular(100),
                       side: const BorderSide(color: Colors.red),
                     ),
+                    disabledBackgroundColor: Colors.grey.shade700,
+                    disabledForegroundColor: Colors.white54,
                   ),
                 ),
               ),
@@ -335,7 +392,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            movie.summary ?? 'Synopsis not available.', // Gunakan ??
+            movie.summary ?? 'Synopsis not available.',
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 14,
@@ -367,7 +424,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           ),
           const SizedBox(height: 5),
           Text(
-            movie.director ?? 'N/A', // Gunakan ??
+            movie.director ?? 'N/A',
             style: const TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 20),

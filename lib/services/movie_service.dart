@@ -116,6 +116,47 @@ class MovieService {
     }
   }
 
+  Future<String?> _fetchMovieTrailerKey(String movieId) async {
+    final url = Uri.parse(
+      '$kTmdbBaseUrl/movie/$movieId/videos?api_key=$kTmdbApiKey',
+    );
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final List<dynamic> results = jsonResponse['results'];
+
+        if (results.isEmpty) return null;
+
+        // 1. Prioritas Utama: Cari yang tipenya 'Trailer' dan bersumber 'YouTube'
+        final trailer = results.firstWhere(
+          (video) => video['site'] == 'YouTube' && video['type'] == 'Trailer',
+          orElse: () => null,
+        );
+
+        if (trailer != null) {
+          return trailer['key'] as String;
+        }
+
+        // 2. Prioritas Kedua: Jika tidak ada Trailer, cari video YouTube apa pun (Teaser, Clip, Featurette)
+        final anyYoutubeVideo = results.firstWhere(
+          (video) => video['site'] == 'YouTube',
+          orElse: () => null,
+        );
+
+        if (anyYoutubeVideo != null) {
+          return anyYoutubeVideo['key'] as String;
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching trailer for $movieId: $e');
+      return null;
+    }
+  }
+
   Future<Movie> fetchMovieDetail(String id) async {
     final url = Uri.parse('$kTmdbBaseUrl/movie/$id?api_key=$kTmdbApiKey');
 
@@ -125,6 +166,7 @@ class MovieService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = json.decode(response.body);
 
+        // --- Existing logic for fetching credits/cast/director ---
         final creditsUrl = Uri.parse(
           '$kTmdbBaseUrl/movie/$id/credits?api_key=$kTmdbApiKey',
         );
@@ -150,11 +192,18 @@ class MovieService {
             cast = castData.take(3).map((c) => c['name'].toString()).toList();
           }
         }
+        // --- End of Existing Logic ---
 
+        // --- NEW: Panggil fungsi trailer key ---
+        String? trailerKey = await _fetchMovieTrailerKey(id);
+        // --- End NEW ---
+
+        // Gabungkan data dan kembalikan objek Movie
         return Movie.fromJson({
           ...jsonResponse,
           'director': director,
           'cast': cast,
+          'trailerKey': trailerKey, // <-- NEW: Tambahkan trailerKey
         });
       } else {
         throw Exception('Failed to load movie detail: ${response.statusCode}');

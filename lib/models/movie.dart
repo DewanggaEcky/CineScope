@@ -13,6 +13,7 @@ class Movie {
   final String? duration;
   final String? director;
   final List<String>? cast;
+  final String? trailerKey; // <-- NEW
 
   Movie({
     required this.id,
@@ -25,6 +26,7 @@ class Movie {
     this.duration,
     this.director,
     this.cast,
+    this.trailerKey, // <-- NEW
   });
 
   factory Movie.fromJson(Map<String, dynamic> json) {
@@ -59,6 +61,7 @@ class Movie {
       director: json['director'] as String?,
       cast: json['cast'] is List ? List<String>.from(json['cast']) : null,
       duration: json['runtime'] != null ? '${json['runtime']}m' : null,
+      trailerKey: json['trailerKey'] as String?,
     );
   }
 }

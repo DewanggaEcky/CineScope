@@ -60,7 +60,6 @@ class AuthService {
       // 1. Update Display Name di Firebase Auth
       await user?.updateDisplayName(name);
 
-      // 2. SIMPAN DATA PROFIL KE FIRESTORE (users collection)
       if (user != null) {
         await _firestore.collection('users').doc(user.uid).set({
           'name': name,
@@ -69,7 +68,6 @@ class AuthService {
         });
       }
 
-      // 3. Simpan nama/email di shared_preferences (fallback)
       await saveUserData(email, name);
 
       return userCredential;
