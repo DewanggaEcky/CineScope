@@ -43,8 +43,6 @@ Semua data film (Now Playing, Popular, Top Rated, Detail, Search, dan Genre) dia
 
 ## 📱 Halaman dan Fungsi
 
-**(Deskripsi halaman telah diperbarui untuk mencerminkan pengambilan data real-time)**
-
 1.  **Halaman Login (`/login`) & Register (`/register`)**
     - Menggunakan **Firebase Auth** untuk otentikasi.
     - Status login disimpan di `shared_preferences`.
